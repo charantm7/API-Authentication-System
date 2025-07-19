@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
+
 load_dotenv()
 
 class Settings(BaseSettings):
@@ -15,4 +16,15 @@ class Settings(BaseSettings):
         extra = "ignore"
         
 
+class JWT_Token(BaseSettings):
+
+    SECRETE_KEY: str
+    ALGORITHM: str
+    TOKEN_EXPIRATION_TIME: int
+
+    class Config:
+        env_file = ".env"
+        extra = "ignore"
+
 settings = Settings()
+Token = JWT_Token()

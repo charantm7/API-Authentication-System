@@ -3,15 +3,18 @@ from sqlalchemy.orm import Session
 from typing import Optional, Tuple
 
 from app.models.models import Users
-from app.models.models import Users
 
 
-def get_user( db: Session, username: str, email: str) -> Optional[Users]:
+def get_user( db: Session, username: Optional[str] = None, email: Optional[str] = None) -> Optional[Users]:
 
     """Returns the user information if exists in DB else None"""
-    return db.query(Users).filter(
-        (Users.username == username) | (Users.email == email)
-    ).first()
+    if username:
+        query = db.query(Users).filter(Users.username == username)
+
+    if email: 
+        query = db.query(Users).filter(Users.email == email)
+
+    return query.first()
 
 
 def is_strong_password(password: str) -> Tuple[bool, str]:

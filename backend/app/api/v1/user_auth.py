@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordRequestForm
 
-from app.schemas.auth_schema import SignUp, UserResponse
+from app.schemas.auth_schema import Login, SignUp, UserResponse, Token
 from app.database.psql_connection import get_db
 from app.dependency import get_user, is_strong_password
 from app.models.models import Users
@@ -34,3 +35,22 @@ async def user_signup(credentials: SignUp, db: Session = Depends(get_db)):
     return new_user
 
 
+# User Login Endpoint
+@router.post('/login', response_model=Token)
+async def user_login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """
+    Login Function to API
+
+    - User input (email, password)
+    - Validate for user exists in the Database and verify Password 
+    - Creates access token 
+    """
+
+    user = get_user(db=db, email=credentials.username)
+    if not user or not utils.verify_password(credentials.password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Invalid Credentials!')
+
+    jwt_token = utils.create_access_token({'username':user.username})
+
+    
+    return {'access_token': jwt_token, 'token_type': 'Bearer'}
