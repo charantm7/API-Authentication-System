@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.schemas.auth_schema import Login, SignUp, UserResponse, Token
+from app.schemas.auth_schema import Login, SignUp, UserResponse, TokenResponse
 from app.database.psql_connection import get_db
 from app.dependency import get_user, is_strong_password
 from app.models.models import Users
@@ -36,7 +36,7 @@ async def user_signup(credentials: SignUp, db: Session = Depends(get_db)):
 
 
 # User Login Endpoint
-@router.post('/login', response_model=Token)
+@router.post('/login', response_model=TokenResponse)
 async def user_login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     Login Function to API

@@ -2,11 +2,15 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
 # JWT Token
-class Token(BaseModel):
+class TokenResponse(BaseModel):
 
     access_token: str
     token_type: str
 
+class TokenData(BaseModel):
+
+    username: str
+    
 # Authentication
 class UserAuth(BaseModel):
 

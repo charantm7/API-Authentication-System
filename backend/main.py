@@ -1,7 +1,10 @@
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI, Response, status, Depends
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 from app.api import api_router as router
+from app.models.models import Users
+from app.dependency import get_current_user
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,7 +32,7 @@ async def favicon():
 
 
 @app.get("/")
-def health_check():
-    return {"Message": "Server Running"}
+def health_check(current_user: Annotated[Users, Depends(get_current_user)] ):
+    return current_user
 
 
