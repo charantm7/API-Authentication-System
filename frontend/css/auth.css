@@ -1,0 +1,153 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  padding: 0 3rem;
+}
+body .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 2rem 0 0;
+  width: 28%;
+  gap: 1.7rem;
+  padding: 2rem 1rem;
+  font-family: "Roboto Mono", monospace;
+}
+body .container .login-form-re {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0.2rem;
+}
+body .container .login-form-re p {
+  font-size: x-small;
+}
+body .container .oauth2 {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+}
+body .container .oauth2-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.763);
+  padding: 0.6rem;
+  background-color: rgba(0, 0, 0, 0.763);
+  border-radius: 5px;
+  cursor: pointer;
+  gap: 0.8rem;
+  width: 100%;
+  transition: 0.1s transform ease-in-out;
+}
+body .container .oauth2-box i {
+  font-size: medium;
+  color: white;
+  margin-left: 1rem;
+}
+body .container .oauth2-box p {
+  color: white;
+  font-size: 12px;
+}
+body .container .oauth2-box:hover {
+  background-color: black;
+  border: 1px solid black;
+  transform: scale(1.05);
+}
+body .container .or-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+}
+body .container .or-line .line {
+  width: 90px;
+  height: 0.5px;
+  background-color: rgba(0, 0, 0, 0.458);
+}
+body .container .or-line p {
+  font-size: x-small;
+  color: rgba(0, 0, 0, 0.801);
+}
+body .container .signup-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 1.5rem;
+}
+body .container .signup-form-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.763);
+  border-radius: 5px;
+}
+body .container .signup-form-box i {
+  padding: 0 0.5rem;
+  color: rgba(0, 0, 0, 0.763);
+}
+body .container .signup-form-box input {
+  padding: 0.7rem 0.2rem 0.7rem 0.8rem;
+  border: none;
+  border-radius: 3px;
+  outline: none;
+  width: 100%;
+  background: transparent;
+  font-size: 11px;
+}
+body .container .signup-form .check-box {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.856);
+}
+body .container .signup-form button {
+  height: 35px;
+  background-color: rgba(0, 0, 0, 0.763);
+  border: 1px solid rgba(0, 0, 0, 0.667);
+  color: white;
+  border-radius: 5px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  font-size: 12px;
+}
+body .container .signup-form button:hover {
+  background-color: rgba(0, 0, 0, 0.878);
+  border: 1px solid rgba(0, 0, 0, 0.842);
+}
+body .container-2 {
+  display: block;
+  width: 750px;
+  height: 500px;
+  margin-top: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+body .container-2 img {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border-radius: 20px;
+}
+
+@media (max-width: 800px) {
+  body .container {
+    width: 80%;
+  }
+  body .container-2 {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  body .container {
+    width: 100%;
+  }
+  body .container-2 {
+    display: none;
+  }
+}/*# sourceMappingURL=auth.css.map */
