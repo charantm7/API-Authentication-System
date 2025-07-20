@@ -26,5 +26,10 @@ class JWT_Token(BaseSettings):
         env_file = ".env"
         extra = "ignore"
 
+class GoogleAuth(BaseSettings):
+
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRETE: str
+
 settings = Settings()
 Token = JWT_Token()

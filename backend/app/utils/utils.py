@@ -1,22 +1,42 @@
-
-from re import I
+import os
 import jwt
-from jwt.exceptions import InvalidTokenError
-from fastapi import Depends
+import uuid
+import traceback
+from fastapi import Depends , HTTPException
 from passlib.context import CryptContext
+from jose import ExpiredSignatureError, JWTError
+from starlette.middleware.sessions import SessionMiddleware
+from fastapi.responses import JSONResponse, RedirectResponse
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
+from authlib.integrations.starlette_client import OAuth
 
-from app.core.config import Token
+from app.core.config import JWT_Token, GoogleAuth
 from app.schemas import auth_schema
 
-SECRETE_KEY = Token.SECRETE_KEY
-ALGORITHM = Token.ALGORITHM
-TOKEN_EXPIRATION_TIME = Token.TOKEN_EXPIRATION_TIME
+SECRETE_KEY = JWT_Token.SECRETE_KEY
+ALGORITHM = JWT_Token.ALGORITHM
+TOKEN_EXPIRATION_TIME = JWT_Token.TOKEN_EXPIRATION_TIME
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/v1/api/auth/login')
+
+oauth = OAuth()
+oauth.register(
+    name="API-Authentication System",
+    client_id = GoogleAuth.GOOGLE_CLIENT_ID,
+    client_secret = GoogleAuth.GOOGLE_CLIENT_SECRETE,
+    authorize_url = "https://accounts.google.com/o/oauth2/auth",
+    authorize_params = None,
+    access_token_url = "https://accounts.google.com/o/oauth2/token",
+    access_token_params = None,
+    refresh_token_url = None,
+    authorize_state = JWT_Token.SECRETE_KEY,
+    redirect_uri = "http://127.0.0.1:8000/auth",
+    jwks_uri="https://www.googleapis.com/oauth2/v3/certs",
+    client_kwargs={"scope": "openid profile email"},
+)
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
@@ -44,6 +64,9 @@ def create_access_token(data: dict) -> str:
 # Verify access token
 def validate_access_token(credential_exception, token):
 
+    if not token:
+        credential_exception
+
     try:
         payload = jwt.decode(token, SECRETE_KEY, algorithms=[ALGORITHM])
         username = payload.get('username')
@@ -54,7 +77,12 @@ def validate_access_token(credential_exception, token):
         token_data = auth_schema.TokenData(username=username)
         return token_data
 
-    except InvalidTokenError:
+    except ExpiredSignatureError:
         raise credential_exception
+    
+    except JWTError:
+        raise credential_exception
+
+    
     
 
