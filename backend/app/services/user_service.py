@@ -1,4 +1,4 @@
-import re
+
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Optional, Tuple
@@ -6,6 +6,7 @@ from typing import Optional, Tuple
 from app.models.models import Users
 from app.utils import utils
 from app.database.psql_connection import get_db
+from app.utils import security
 
 
 def get_user( db: Session, username: Optional[str] = None, email: Optional[str] = None) -> Optional[Users]:
@@ -20,31 +21,6 @@ def get_user( db: Session, username: Optional[str] = None, email: Optional[str] 
     return query.first()
 
 
-def is_strong_password(password: str) -> Tuple[bool, str]:
-    
-    """
-    Check the strenght of the password
-    
-    It returns Tuple(bool, str) -> True, "Reason"
-    """
-
-    if len(password) < 8:
-        return False, "Password must be atleast 8 characters long!"
-    
-    if not re.search(r'[a-z]', password):
-        return False, "Password must contain atleast one lowercase letter!"
-    
-    if not re.search(r'[A-Z]', password):
-        return False, "Password must contain atleast one uppercase letter!"
-
-    if not re.search(r'[\d]', password):
-        return False, "Password must contain atleast one digit!"
-
-    if not re.search(r'[!@#$%^&*(),.?\":{}|<>]', password):
-        return False, "password must contain atleast one Special characters!"
-    
-    return True, "Strong Password"
-
     
 def get_current_user(token: str = Depends(utils.oauth2_scheme) , db: Session = Depends(get_db)):
 
@@ -58,3 +34,25 @@ def get_current_user(token: str = Depends(utils.oauth2_scheme) , db: Session = D
         raise credential_exception
 
     return user
+
+
+async def create_user_account(credentials, db: Session, background_task) -> Users:
+    user = get_user(db, credentials.username, credentials.email)
+    if user:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username or Email already exists!.")
+    
+    # check for strong password
+    is_valid, message = security.is_strong_password(credentials.password_hash)
+
+    if not is_valid:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{message}")
+
+    # storing hashed password
+    credentials.password_hash = security.hash_password(credentials.password_hash)
+
+    new_user = Users(**credentials.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user

@@ -1,12 +1,12 @@
-import os
+
 import jwt
-import uuid
-import traceback
+import re
 from fastapi import Depends , HTTPException
 from passlib.context import CryptContext
 from jose import ExpiredSignatureError, JWTError
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
+from typing import Tuple
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 from authlib.integrations.starlette_client import OAuth
@@ -24,7 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/v1/api/auth/login')
 
 oauth = OAuth()
 oauth.register(
-    name="API-Authentication System",
+    name="API_Authentication_System",
     client_id = GoogleAuth.GOOGLE_CLIENT_ID,
     client_secret = GoogleAuth.GOOGLE_CLIENT_SECRETE,
     authorize_url = "https://accounts.google.com/o/oauth2/auth",
@@ -86,3 +86,27 @@ def validate_access_token(credential_exception, token):
     
     
 
+def is_strong_password(password: str) -> Tuple[bool, str]:
+    
+    """
+    Check the strenght of the password
+    
+    It returns Tuple(bool, str) -> True, "Reason"
+    """
+
+    if len(password) < 8:
+        return False, "Password must be atleast 8 characters long!"
+    
+    if not re.search(r'[a-z]', password):
+        return False, "Password must contain atleast one lowercase letter!"
+    
+    if not re.search(r'[A-Z]', password):
+        return False, "Password must contain atleast one uppercase letter!"
+
+    if not re.search(r'[\d]', password):
+        return False, "Password must contain atleast one digit!"
+
+    if not re.search(r'[!@#$%^&*(),.?\":{}|<>]', password):
+        return False, "password must contain atleast one Special characters!"
+    
+    return True, "Strong Password"

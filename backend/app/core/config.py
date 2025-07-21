@@ -1,3 +1,4 @@
+from pydantic_core import Url
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
@@ -30,6 +31,13 @@ class GoogleAuth(BaseSettings):
 
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRETE: str
+    REDIRECT_URL: Url
+    FRONTEND_URL: Url
+
+    class Config:
+        env_file = ".env"
+        extra = "ignore"
 
 settings = Settings()
 Token = JWT_Token()
+Googleauth = GoogleAuth()
