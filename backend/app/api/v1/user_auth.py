@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.schemas.auth_schema import Login, SignUp, UserResponse, TokenResponse
 from app.database.psql_connection import get_db
 from app.services.user_service import get_user
-from app.models.models import Users, PendingUser
+from app.models.models import Users, PendingUser, ValidationToken
 from app.utils import security
 from app.services import user_service
 
@@ -14,32 +14,12 @@ router = APIRouter()
 # User SignUp Endpoint
 @router.post('/signup')
 async def user_signup(credentials: SignUp,  db: Session = Depends(get_db)):
-
     return await user_service.create_user_account(credentials=credentials, db=db)
 
+# Email Verification 
 @router.get('/verify')
 async def verify_email(token: str = Query(...), db: Session = Depends(get_db) ):
-
-    credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid link", headers={"WWW-Authenticate":"Bearer"})
-    
-    data = security.validate_access_token(credential_exception=credential_exception, token=token)
-
-    user = db.query(PendingUser).filter(PendingUser.username == data.username).first()
-
-    if not user:
-        raise credential_exception
-    
-    new_user = Users(username=user.username, password_hash=user.password_hash, email=user.email)
-    db.add(new_user)
-    db.delete(user)
-    db.commit()
-    db.refresh(new_user)
-    
-    return {'MSG':'Email verified Successfull', 'User':new_user}
-
-
-
-
+    return user_service.verify_email(db=db, token=token)
 
 # User Login Endpoint
 @router.post('/login', response_model=TokenResponse)
