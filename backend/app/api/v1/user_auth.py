@@ -1,22 +1,43 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.schemas.auth_schema import Login, SignUp, UserResponse, TokenResponse
 from app.database.psql_connection import get_db
 from app.services.user_service import get_user
-from app.models.models import Users
+from app.models.models import Users, PendingUser
 from app.utils import security
-from app.core.config import Googleauth
 from app.services import user_service
 
 router = APIRouter()
 
 # User SignUp Endpoint
-@router.post('/signup', response_model=UserResponse)
-async def user_signup(credentials: SignUp, background_task: BackgroundTasks, db: Session = Depends(get_db)):
+@router.post('/signup')
+async def user_signup(credentials: SignUp,  db: Session = Depends(get_db)):
 
-    return await user_service.create_user_account(credentials=credentials, db=db, background_task=background_task)
+    return await user_service.create_user_account(credentials=credentials, db=db)
+
+@router.get('/verify')
+async def verify_email(token: str = Query(...), db: Session = Depends(get_db) ):
+
+    credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid link", headers={"WWW-Authenticate":"Bearer"})
+    
+    data = security.validate_access_token(credential_exception=credential_exception, token=token)
+
+    user = db.query(PendingUser).filter(PendingUser.username == data.username).first()
+
+    if not user:
+        raise credential_exception
+    
+    new_user = Users(username=user.username, password_hash=user.password_hash, email=user.email)
+    db.add(new_user)
+    db.delete(user)
+    db.commit()
+    db.refresh(new_user)
+    
+    return {'MSG':'Email verified Successfull', 'User':new_user}
+
+
 
 
 

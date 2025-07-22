@@ -4,7 +4,7 @@ from typing import Annotated
 
 from app.api import api_router as router
 from app.models.models import Users
-from app.dependency import get_current_user
+from app.services.user_service import get_current_user
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

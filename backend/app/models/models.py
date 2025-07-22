@@ -17,21 +17,14 @@ class Users(Base):
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
 
-    token = relationship("UserToken", back_populates="user")
 
-    def get_context_string(self, context:str):
-        return f"{context}{self.password_hash[-6:]}{self.created_at.strftime('%m%d%Y%H%M%S')}".strip()
-
-
-
-class UserToken(Base):
-    __tablename__ = 'user_tokens'
-
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    user_id = mapped_column(ForeignKey('users.id'))
-    access_key = Column(String(300), nullable=True, default=None, index=True)
-    refresh_key = Column(String(300), nullable=True, index=True, default=None)
+class PendingUser(Base):
+    __tablename__ = "pending_users"
+    
+    id = Column(Integer, primary_key=True, nullable=False)
+    username = Column(String, unique=True, nullable=False ) 
+    email = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
-    expires_at = Column(TIMESTAMP(timezone=True), nullable=False)
 
 

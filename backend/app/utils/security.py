@@ -11,12 +11,12 @@ from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 from authlib.integrations.starlette_client import OAuth
 
-from app.core.config import JWT_Token, GoogleAuth
+from app.core.config import settings
 from app.schemas import auth_schema
 
-SECRETE_KEY = JWT_Token.SECRETE_KEY
-ALGORITHM = JWT_Token.ALGORITHM
-TOKEN_EXPIRATION_TIME = JWT_Token.TOKEN_EXPIRATION_TIME
+SECRETE_KEY = settings.SECRETE_KEY
+ALGORITHM = settings.ALGORITHM
+TOKEN_EXPIRATION_TIME = settings.TOKEN_EXPIRATION_TIME
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
 
@@ -25,14 +25,14 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/v1/api/auth/login')
 oauth = OAuth()
 oauth.register(
     name="API_Authentication_System",
-    client_id = GoogleAuth.GOOGLE_CLIENT_ID,
-    client_secret = GoogleAuth.GOOGLE_CLIENT_SECRETE,
+    client_id = settings.GOOGLE_CLIENT_ID,
+    client_secret = settings.GOOGLE_CLIENT_SECRETE,
     authorize_url = "https://accounts.google.com/o/oauth2/auth",
     authorize_params = None,
     access_token_url = "https://accounts.google.com/o/oauth2/token",
     access_token_params = None,
     refresh_token_url = None,
-    authorize_state = JWT_Token.SECRETE_KEY,
+    authorize_state = settings.SECRETE_KEY,
     redirect_uri = "http://127.0.0.1:8000/auth",
     jwks_uri="https://www.googleapis.com/oauth2/v3/certs",
     client_kwargs={"scope": "openid profile email"},
