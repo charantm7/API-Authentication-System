@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     SECRETE_KEY: str
     ALGORITHM: str
     TOKEN_EXPIRATION_TIME: int
+    REFRESH_TOKEN_EXPIRATION_DAY: int
+    REFRESH_TOKEN_SECRETE_KEY: str
 
     # google oauth
     GOOGLE_CLIENT_ID: str

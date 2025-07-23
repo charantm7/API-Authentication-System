@@ -5,11 +5,17 @@ from pydantic import BaseModel, EmailStr
 class TokenResponse(BaseModel):
 
     access_token: str
+    refresh_token: str
     token_type: str
 
 class TokenData(BaseModel):
 
     email: EmailStr
+
+class RefreshToken(BaseModel):
+
+    refresh_token: str
+    token_type: str = "Bearer"
     
 # Authentication
 class UserAuth(BaseModel):

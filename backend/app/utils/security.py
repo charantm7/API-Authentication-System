@@ -1,9 +1,11 @@
 
+from errno import ECANCELED
 import jwt
 import re
-from fastapi import Depends , HTTPException
+from fastapi import Depends , HTTPException, status
 from passlib.context import CryptContext
-from jose import ExpiredSignatureError, JWTError
+from jose import JWTError
+from jwt.exceptions import ExpiredSignatureError
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from typing import Tuple
@@ -17,6 +19,9 @@ from app.schemas import auth_schema
 SECRETE_KEY = settings.SECRETE_KEY
 ALGORITHM = settings.ALGORITHM
 TOKEN_EXPIRATION_TIME = settings.TOKEN_EXPIRATION_TIME
+REFRESH_TOKEN_EXPIRATION_DAY = settings.REFRESH_TOKEN_EXPIRATION_DAY
+REFRESH_TOKEN_SECRETE_KEY = settings.REFRESH_TOKEN_SECRETE_KEY
+
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
 
@@ -61,6 +66,18 @@ def create_access_token(data: dict) -> str:
 
     return jwt_encode
 
+# create refresh token 
+def create_refresh_token(data: dict) -> str:
+
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRATION_DAY)
+
+    to_encode.update({'exp':expire})
+
+    refresh_token = jwt.encode(to_encode, REFRESH_TOKEN_SECRETE_KEY, algorithm=ALGORITHM)
+
+    return refresh_token
+
 # Verify access token
 def validate_access_token(credential_exception, token):
 
@@ -82,10 +99,41 @@ def validate_access_token(credential_exception, token):
     
     except JWTError:
         raise credential_exception
-
     
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     
+# verify refresh token and create new access token
+def validate_refresh_token(token):
 
+    credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate":"Bearer"})
+
+    if not token:
+            raise credential_exception
+    try:
+
+        payload = jwt.decode(token.refresh_token.encode('utf-8'), REFRESH_TOKEN_SECRETE_KEY, algorithms=[ALGORITHM])
+
+        email = payload.get('email')
+        if not email:
+            raise credential_exception
+        
+        token_data = auth_schema.TokenData(email=email)
+
+        expire = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRATION_TIME)
+        to_encode = {'email':token_data.email, 'exp':expire}
+
+        access_token = jwt.encode(to_encode, SECRETE_KEY, algorithm=ALGORITHM)
+
+        return {'access_token': access_token, 'token_type': 'Bearer'}
+    
+    except ExpiredSignatureError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e)
+
+    except JWTError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e)
+        
+# check for password strength
 def is_strong_password(password: str) -> Tuple[bool, str]:
     
     """
