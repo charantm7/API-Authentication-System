@@ -9,7 +9,7 @@ class TokenResponse(BaseModel):
 
 class TokenData(BaseModel):
 
-    username: str
+    email: EmailStr
     
 # Authentication
 class UserAuth(BaseModel):
@@ -32,3 +32,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     created_at: datetime
     is_active: bool
+
+class ForgetPassword(BaseModel):
+
+    email: EmailStr

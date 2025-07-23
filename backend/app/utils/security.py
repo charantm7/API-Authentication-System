@@ -69,12 +69,12 @@ def validate_access_token(credential_exception, token):
 
     try:
         payload = jwt.decode(token, SECRETE_KEY, algorithms=[ALGORITHM])
-        username = payload.get('username')
+        email = payload.get('email')
 
-        if not username:
+        if not email:
             raise credential_exception
         
-        token_data = auth_schema.TokenData(username=username)
+        token_data = auth_schema.TokenData(email=email)
         return token_data
 
     except ExpiredSignatureError:

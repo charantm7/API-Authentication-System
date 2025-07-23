@@ -1,7 +1,10 @@
 
+from email import message
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+from websockets import serve
 
 from app.core.config import settings
 from app.utils import email
@@ -25,9 +28,34 @@ async def send_account_verification_email(to_email: str, token: str):
             server.starttls()
             server.login(settings.EMAIL_FROM, settings.EMAIL_PASSWORD)
             server.send_message(message)
-        print('email sent')
+        
     except smtplib.SMTPAuthenticationError as e:
         print("Auth error:", e)
     except Exception as e:
         print(" Other error:", e)
+
+
+async def send_reset_password_link(to_email:str, token: str):
+
+    subject = "Reset Your Password"
+    verification_link = f"{settings.FRONTEND_URL}v1/auth/reset-password?token={token}"
+
+    html = email.render_email_template('reset_password.html', context={'verification_link':verification_link})
+
+    message = MIMEMultipart('alternative')
+    message['Subject'] = subject
+    message['From'] = settings.EMAIL_FROM
+    message['To'] = to_email
+    message.attach(MIMEText(html, 'html'))
+    try:
+        with smtplib.SMTP(settings.SMTP_SERVER, settings.SMTP_PORT) as server:
+            server.starttls()
+            server.login(settings.EMAIL_FROM, settings.EMAIL_PASSWORD)
+            server.send_message(message)
+    except smtplib.SMTPAuthenticationError as e:
+        print("Auth error:", e)
+
+    except Exception as e:
+        print(" Other error:", e)
+
             

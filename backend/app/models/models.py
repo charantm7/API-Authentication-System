@@ -17,6 +17,20 @@ class Users(Base):
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
 
+    password_reset_token = relationship('PasswordResetToken', back_populates='users', cascade="all, delete-orphan")
+
+
+class PasswordResetToken(Base):
+    __tablename__ = 'password_reset_token'
+
+    id = id = Column(Integer, primary_key=True, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"))
+    token = Column(String, unique=True)
+    expires_at = Column(DateTime, nullable=False)
+
+    users = relationship("Users", back_populates="password_reset_token")
+
+
 
 class PendingUser(Base):
     __tablename__ = "pending_users"

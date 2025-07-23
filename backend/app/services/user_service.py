@@ -40,7 +40,7 @@ def get_current_user(token: str = Depends(security.oauth2_scheme) , db: Session 
 
     data = security.validate_access_token(credential_exception, token)
     
-    user = get_user(db=db, username=data.username)
+    user = get_user(db=db, email=data.email)
 
     if not user:
         raise credential_exception
@@ -69,7 +69,7 @@ async def create_user_account(credentials, db: Session):
     # storing hashed password
     credentials.password_hash = security.hash_password(credentials.password_hash)
 
-    jwt_token = security.create_access_token({'username':credentials.username})
+    jwt_token = security.create_access_token({'email':credentials.email})
 
     await email_service.send_account_verification_email(credentials.email, jwt_token)
 
@@ -95,7 +95,7 @@ def verify_email(db: Session, token):
     
     data = security.validate_access_token(credential_exception=credential_exception, token=token_db.token)
 
-    user = db.query(PendingUser).filter(PendingUser.username == data.username).first() 
+    user = db.query(PendingUser).filter(PendingUser.email == data.email).first() 
 
     if not user:
         raise credential_exception
