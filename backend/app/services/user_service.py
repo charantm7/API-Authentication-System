@@ -1,6 +1,7 @@
 
 from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, status
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from typing import Optional
 
@@ -51,7 +52,7 @@ def get_current_user(token: str = Depends(security.oauth2_scheme) , db: Session 
 async def create_user_account(credentials, db: Session):
     user = get_user(db, credentials.username, credentials.email)
     if user:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username or Email already exists!.")
+        return "Email already exsists"
     
     pending_user = get_user_inpending(db, credentials.username, credentials.email)
     if pending_user:
@@ -63,6 +64,9 @@ async def create_user_account(credentials, db: Session):
     # check for strong password
     is_valid, message = security.is_strong_password(credentials.password_hash)
 
+    if credentials.password_hash != credentials.confirm_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Both field should be same")
+
     if not is_valid:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{message}")
 
@@ -73,7 +77,9 @@ async def create_user_account(credentials, db: Session):
 
     await email_service.send_account_verification_email(credentials.email, jwt_token)
 
-    new_user = PendingUser(**credentials.dict())
+    new_user = PendingUser(username=credentials.username,
+    email=credentials.email,
+    password_hash=credentials.password_hash)    
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -82,7 +88,7 @@ async def create_user_account(credentials, db: Session):
     db.add(token)
     db.commit()
 
-    return {'Message':'Email verification link has been sent'}
+    return f"Verification link has sent to Email {credentials.email}"
 
 
 def verify_email(db: Session, token):

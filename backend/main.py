@@ -1,6 +1,10 @@
+from os import name
 from fastapi import FastAPI, Response, status, Depends
 from contextlib import asynccontextmanager
 from typing import Annotated
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api import api_router as router
 from app.models.models import Users
@@ -21,6 +25,8 @@ app = FastAPI(
     version="1.0",
     lifespan=lifespan
 )
+
+app.mount("/static", StaticFiles(directory="frontend/static"), name='static')
 
 app.include_router(router)
 

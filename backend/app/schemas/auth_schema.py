@@ -17,6 +17,7 @@ class UserAuth(BaseModel):
     username: str
     email: EmailStr
     password_hash: str
+    
 
 class Login(BaseModel):
 
@@ -24,7 +25,7 @@ class Login(BaseModel):
     password_hash: str
 
 class SignUp(UserAuth):
-    pass
+    confirm_password: str
 
 class UserResponse(BaseModel):
 
@@ -36,3 +37,8 @@ class UserResponse(BaseModel):
 class ForgetPassword(BaseModel):
 
     email: EmailStr
+
+class ResetPassword(BaseModel):
+
+    password: str
+    confirm_password: str

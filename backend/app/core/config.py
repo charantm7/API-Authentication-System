@@ -1,8 +1,12 @@
 from pydantic_core import Url
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
+from fastapi.templating import Jinja2Templates
 
 load_dotenv()
+
+templates = Jinja2Templates(directory="frontend/templates")
+
 
 class Settings(BaseSettings):
 
