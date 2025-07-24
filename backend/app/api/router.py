@@ -5,6 +5,7 @@ api_router = APIRouter()
 
 api_router.include_router(
     auth_router,
+    prefix="/v1/auth",
     tags=['Authentication']
 )
 

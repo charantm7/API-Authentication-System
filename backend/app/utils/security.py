@@ -27,12 +27,30 @@ pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/v1/api/auth/login')
 
 oauth = OAuth()
+
+# Google auth registeration
 oauth.register(
-    name="google",
-    client_id = settings.GOOGLE_CLIENT_ID,
-    client_secret = settings.GOOGLE_CLIENT_SECRETE,
-    server_metadata_url = 'https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs = {"scope": "openid email profile"}
+    name='google',
+    client_id=settings.GOOGLE_CLIENT_ID,
+    client_secret=settings.GOOGLE_CLIENT_SECRETE,
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={
+        'scope': 'openid email profile',
+        'prompt': 'consent'
+    }
+)
+
+# Github auth registeration
+oauth.register(
+    name='github',
+    client_id=settings.GITHUB_CLIENT_ID,
+    client_secret=settings.GITHUB_CLIENT_SECRETE,
+    access_token_url='https://github.com/login/oauth/access_token',
+    authorize_url='https://github.com/login/oauth/authorize',
+    api_base_url='https://api.github.com/',
+    client_kwargs={
+        'scope': 'user:email read:user',
+    },
 )
 
 def hash_password(password: str) -> str:

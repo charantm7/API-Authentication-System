@@ -1,5 +1,6 @@
 
 import secrets
+import httpx
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
@@ -49,26 +50,74 @@ async def user_login(credentials: OAuth2PasswordRequestForm = Depends(), db: Ses
 def refresh_token(token: RefreshToken):
     return security.validate_refresh_token(token=token)
 
-
 # login wihth google 
-@router.get('/v1/auth/login/google')
+@router.get('/login/google', response_model=TokenResponse)
 async def login_with_google(request: Request):
-    request.session.clear()
-    
     redirect_uri = "http://127.0.0.1:8000/v1/auth/google/callback"
     return await security.oauth.google.authorize_redirect(request, redirect_uri)
 
-@router.get('/v1/auth/google/callback', response_model=TokenResponse)
+@router.get('/google/callback')
 async def google_callback(request: Request, db: Session = Depends(get_db)):
     try:
+
         token = await security.oauth.google.authorize_access_token(request)
-        user_info = await security.oauth.google.parse_id_token(request, token)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    
+    access_token = token.get('access_token')
+    userinfo = token.get('userinfo')
+    iss = userinfo['iss']
 
-        if not user_info:
-            raise HTTPException(status_code=400, detail="Could not get user info from Google")
+    async with httpx.AsyncClient() as client:
 
+        response = await client.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers ={"Authorization": f"Bearer {access_token}"}
+        )
+
+    user_info = response.json()
+    email = user_info['email']
+    name = user_info['name']
+    user_id = user_info['id']
+    
+
+    if iss not in ["https://accounts.google.com", "accounts.google.com"]:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Google authentication failed.")
+
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Google authentication failed.")
+
+    user = db.query(Users).filter(Users.email == email).first()
+
+    password = secrets.token_urlsafe(16)
+    hashed_password = security.hash_password(password=password)
+    if not user:
+
+        new_user = Users(username=name, email=email, provider='google', password_hash=hashed_password)
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+    jwt_token = security.create_access_token({'email':email})
+    refresh_token = security.create_refresh_token({'email':email})
+
+    return {'access_token':jwt_token, 'refresh_token':refresh_token, 'token_type':'Bearer'}
+
+@router.get('/login/github')
+async def login_with_github(request: Request):
+    redirect_uri = "http://127.0.0.1:8000/v1/auth/github/callback"
+    return await security.oauth.github.authorize_redirect(request, redirect_uri)
+
+@router.get('/github/callback')
+async def github_callback(request: Request):
+
+    try: 
+        token = await security.oauth.github.authorize_access_token(request)
+        user_data = await security.oauth.github.get('user', token=token)
+
+        email_data = await security.oauth.github.get('user/emails', token=token)
+        emails = email_data.json()
+        return {'user':user_data.json(),'email':emails}
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"OAuth Error: {str(e)}")
-
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

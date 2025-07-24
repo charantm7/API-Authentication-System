@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     # google oauth
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRETE: str
+
+    # github auth
+    GITHUB_CLIENT_ID: str
+    GITHUB_CLIENT_SECRETE: str
+
     REDIRECT_URL: str
     FRONTEND_URL: str
 
