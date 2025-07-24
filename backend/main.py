@@ -6,8 +6,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from starlette.middleware.sessions import SessionMiddleware
+
 from app.api import api_router as router
 from app.models.models import Users
+from app.core.config import settings
 from app.services.user_service import get_current_user
 
 @asynccontextmanager
@@ -24,6 +27,14 @@ app = FastAPI(
     title='Authentication System',
     version="1.0",
     lifespan=lifespan
+)
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.MIDDLEWARE_SECRETE_KEY,
+    same_site="lax",            
+    https_only=False,
+    session_cookie="auth_session"
 )
 
 app.mount("/static", StaticFiles(directory="frontend/static"), name='static')

@@ -216,6 +216,9 @@ def user_login(db, credentials):
     """
     user = get_user(db=db, email=credentials.username)
 
+    if user.provider != "credentials":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Please login using {user.provider.title()}")
+
     if not user or not security.verify_password(credentials.password, user.password_hash):
 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Invalid Credentials!')

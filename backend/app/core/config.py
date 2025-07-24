@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
+    MIDDLEWARE_SECRETE_KEY: str
+
     # jwt
     SECRETE_KEY: str
     ALGORITHM: str
@@ -27,8 +29,8 @@ class Settings(BaseSettings):
     # google oauth
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRETE: str
-    REDIRECT_URL: Url
-    FRONTEND_URL: Url
+    REDIRECT_URL: str
+    FRONTEND_URL: str
 
     # email
     EMAIL_FROM: str

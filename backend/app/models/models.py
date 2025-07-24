@@ -16,6 +16,7 @@ class Users(Base):
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
+    provider = Column(String, default='credentials')
 
     password_reset_token = relationship('PasswordResetToken', back_populates='users', cascade="all, delete-orphan")
 
