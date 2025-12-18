@@ -18,7 +18,6 @@ from app.schemas.auth_schema import Login, SignUp, UserResponse, TokenResponse, 
 
 router = APIRouter()
 
-# 
 # User SignUp Endpoint
 @router.post('/signup', response_class=HTMLResponse)
 async def user_signup(credentials: SignUp, db: Session = Depends(get_db)):
